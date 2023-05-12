@@ -16,10 +16,8 @@ def get_profile_name(profile_file):
     try:
         with profile_file.open("r") as profile_data:
             for line in profile_data:
-                match = RE_PROFILE.match(line)
-                if not match:
-                    continue
-                profiles.add(match.group(1))
+                if match := RE_PROFILE.match(line):
+                    profiles.add(match.group(1))
     except OSError as err:
         raise AppArmorFileError(
             f"Can't read AppArmor profile: {err}", _LOGGER.error
@@ -35,9 +33,7 @@ def get_profile_name(profile_file):
 
 def validate_profile(profile_name, profile_file):
     """Check if profile from file is valid with profile name."""
-    if profile_name == get_profile_name(profile_file):
-        return True
-    return False
+    return profile_name == get_profile_name(profile_file)
 
 
 def adjust_profile(profile_name, profile_file, profile_new):
@@ -49,11 +45,10 @@ def adjust_profile(profile_name, profile_file, profile_new):
     try:
         with profile_file.open("r") as profile:
             for line in profile:
-                match = RE_PROFILE.match(line)
-                if not match:
-                    profile_data.append(line)
-                else:
+                if match := RE_PROFILE.match(line):
                     profile_data.append(line.replace(org_profile, profile_name))
+                else:
+                    profile_data.append(line)
     except OSError as err:
         raise AppArmorFileError(
             f"Can't adjust origin profile: {err}", _LOGGER.error

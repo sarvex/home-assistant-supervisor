@@ -63,10 +63,7 @@ class ServiceManager(CoreSysAttributes):
 
     def exists(self, unit):
         """Check if a unit exists and return True."""
-        for service in self._services:
-            if unit == service.name:
-                return True
-        return False
+        return any(unit == service.name for service in self._services)
 
     async def update(self):
         """Update properties over dbus."""

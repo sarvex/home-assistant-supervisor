@@ -14,8 +14,7 @@ RE_BIND_FAILED = re.compile(
 def format_message(message: str) -> str:
     """Return a formated message if it's known."""
     try:
-        match = RE_BIND_FAILED.match(message)
-        if match:
+        if match := RE_BIND_FAILED.match(message):
             return f"Port '{match.group(1)}' is already in use by something else on the host."
     except TypeError as err:
         _LOGGER.error("The type of message is not a string - %s", err)

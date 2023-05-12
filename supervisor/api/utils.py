@@ -29,18 +29,13 @@ from ..utils.log_format import format_message
 
 def excract_supervisor_token(request: web.Request) -> Optional[str]:
     """Extract Supervisor token from request."""
-    supervisor_token = request.headers.get(HEADER_TOKEN)
-    if supervisor_token:
+    if supervisor_token := request.headers.get(HEADER_TOKEN):
         return supervisor_token
 
-    # Remove with old Supervisor fallback
-    supervisor_token = request.headers.get(HEADER_TOKEN_OLD)
-    if supervisor_token:
+    if supervisor_token := request.headers.get(HEADER_TOKEN_OLD):
         return supervisor_token
 
-    # API access only
-    supervisor_token = request.headers.get(AUTHORIZATION)
-    if supervisor_token:
+    if supervisor_token := request.headers.get(AUTHORIZATION):
         return supervisor_token.split(" ")[-1]
 
     return None

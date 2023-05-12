@@ -68,31 +68,29 @@ class APIBackups(CoreSysAttributes):
 
     def _extract_slug(self, request):
         """Return backup, throw an exception if it doesn't exist."""
-        backup = self.sys_backups.get(request.match_info.get("slug"))
-        if not backup:
+        if backup := self.sys_backups.get(request.match_info.get("slug")):
+            return backup
+        else:
             raise APIError("Backup does not exist")
-        return backup
 
     @api_process
     async def list(self, request):
         """Return backup list."""
-        data_backups = []
-        for backup in self.sys_backups.list_backups:
-            data_backups.append(
-                {
-                    ATTR_SLUG: backup.slug,
-                    ATTR_NAME: backup.name,
-                    ATTR_DATE: backup.date,
-                    ATTR_TYPE: backup.sys_type,
-                    ATTR_PROTECTED: backup.protected,
-                    ATTR_CONTENT: {
-                        ATTR_HOMEASSISTANT: backup.homeassistant_version is not None,
-                        ATTR_ADDONS: backup.addon_list,
-                        ATTR_FOLDERS: backup.folders,
-                    },
-                }
-            )
-
+        data_backups = [
+            {
+                ATTR_SLUG: backup.slug,
+                ATTR_NAME: backup.name,
+                ATTR_DATE: backup.date,
+                ATTR_TYPE: backup.sys_type,
+                ATTR_PROTECTED: backup.protected,
+                ATTR_CONTENT: {
+                    ATTR_HOMEASSISTANT: backup.homeassistant_version is not None,
+                    ATTR_ADDONS: backup.addon_list,
+                    ATTR_FOLDERS: backup.folders,
+                },
+            }
+            for backup in self.sys_backups.list_backups
+        ]
         if request.path == "/snapshots":
             # Kept for backwards compability
             return {"snapshots": data_backups}
@@ -110,17 +108,15 @@ class APIBackups(CoreSysAttributes):
         """Return backup info."""
         backup = self._extract_slug(request)
 
-        data_addons = []
-        for addon_data in backup.addons:
-            data_addons.append(
-                {
-                    ATTR_SLUG: addon_data[ATTR_SLUG],
-                    ATTR_NAME: addon_data[ATTR_NAME],
-                    ATTR_VERSION: addon_data[ATTR_VERSION],
-                    ATTR_SIZE: addon_data[ATTR_SIZE],
-                }
-            )
-
+        data_addons = [
+            {
+                ATTR_SLUG: addon_data[ATTR_SLUG],
+                ATTR_NAME: addon_data[ATTR_NAME],
+                ATTR_VERSION: addon_data[ATTR_VERSION],
+                ATTR_SIZE: addon_data[ATTR_SIZE],
+            }
+            for addon_data in backup.addons
+        ]
         return {
             ATTR_SLUG: backup.slug,
             ATTR_TYPE: backup.sys_type,
@@ -140,9 +136,7 @@ class APIBackups(CoreSysAttributes):
         body = await api_validate(SCHEMA_BACKUP_FULL, request)
         backup = await asyncio.shield(self.sys_backups.do_backup_full(**body))
 
-        if backup:
-            return {ATTR_SLUG: backup.slug}
-        return False
+        return {ATTR_SLUG: backup.slug} if backup else False
 
     @api_process
     async def backup_partial(self, request):
@@ -150,9 +144,7 @@ class APIBackups(CoreSysAttributes):
         body = await api_validate(SCHEMA_BACKUP_PARTIAL, request)
         backup = await asyncio.shield(self.sys_backups.do_backup_partial(**body))
 
-        if backup:
-            return {ATTR_SLUG: backup.slug}
-        return False
+        return {ATTR_SLUG: backup.slug} if backup else False
 
     @api_process
     async def restore_full(self, request):
@@ -212,6 +204,4 @@ class APIBackups(CoreSysAttributes):
 
             backup = await asyncio.shield(self.sys_backups.import_backup(tar_file))
 
-        if backup:
-            return {ATTR_SLUG: backup.slug}
-        return False
+        return {ATTR_SLUG: backup.slug} if backup else False

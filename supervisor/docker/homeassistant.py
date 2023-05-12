@@ -67,48 +67,40 @@ class DockerHomeAssistant(DockerInterface):
             "/dev": {"bind": "/dev", "mode": "ro"},
             "/run/dbus": {"bind": "/run/dbus", "mode": "ro"},
             "/run/udev": {"bind": "/run/udev", "mode": "ro"},
+        } | {
+            str(self.sys_config.path_extern_homeassistant): {
+                "bind": "/config",
+                "mode": "rw",
+            },
+            str(self.sys_config.path_extern_ssl): {"bind": "/ssl", "mode": "ro"},
+            str(self.sys_config.path_extern_share): {
+                "bind": "/share",
+                "mode": "rw",
+            },
+            str(self.sys_config.path_extern_media): {
+                "bind": "/media",
+                "mode": "rw",
+            },
         }
-
-        # Add folders
-        volumes.update(
-            {
-                str(self.sys_config.path_extern_homeassistant): {
-                    "bind": "/config",
-                    "mode": "rw",
-                },
-                str(self.sys_config.path_extern_ssl): {"bind": "/ssl", "mode": "ro"},
-                str(self.sys_config.path_extern_share): {
-                    "bind": "/share",
-                    "mode": "rw",
-                },
-                str(self.sys_config.path_extern_media): {
-                    "bind": "/media",
-                    "mode": "rw",
-                },
-            }
-        )
-
         # Machine ID
         if MACHINE_ID.exists():
-            volumes.update({str(MACHINE_ID): {"bind": str(MACHINE_ID), "mode": "ro"}})
+            volumes[str(MACHINE_ID)] = {"bind": str(MACHINE_ID), "mode": "ro"}
 
         # Configuration Audio
-        volumes.update(
-            {
-                str(self.sys_homeassistant.path_extern_pulse): {
-                    "bind": "/etc/pulse/client.conf",
-                    "mode": "ro",
-                },
-                str(self.sys_plugins.audio.path_extern_pulse): {
-                    "bind": "/run/audio",
-                    "mode": "ro",
-                },
-                str(self.sys_plugins.audio.path_extern_asound): {
-                    "bind": "/etc/asound.conf",
-                    "mode": "ro",
-                },
-            }
-        )
+        volumes |= {
+            str(self.sys_homeassistant.path_extern_pulse): {
+                "bind": "/etc/pulse/client.conf",
+                "mode": "ro",
+            },
+            str(self.sys_plugins.audio.path_extern_pulse): {
+                "bind": "/run/audio",
+                "mode": "ro",
+            },
+            str(self.sys_plugins.audio.path_extern_asound): {
+                "bind": "/etc/asound.conf",
+                "mode": "ro",
+            },
+        }
 
         return volumes
 
@@ -208,10 +200,7 @@ class DockerHomeAssistant(DockerInterface):
             return False
 
         # Check of correct state
-        if docker_container.status not in ("exited", "running", "created"):
-            return False
-
-        return True
+        return docker_container.status in ("exited", "running", "created")
 
     def _validate_trust(
         self, image_id: str, image: str, version: AwesomeVersion

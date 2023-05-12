@@ -34,11 +34,11 @@ class ServiceInterface(CoreSysAttributes, ABC):
     @property
     def providers(self) -> list[str]:
         """Return name of service providers addon."""
-        addons = []
-        for addon in self.sys_addons.installed:
-            if addon.services_role.get(self.slug) == PROVIDE_SERVICE:
-                addons.append(addon.slug)
-        return addons
+        return [
+            addon.slug
+            for addon in self.sys_addons.installed
+            if addon.services_role.get(self.slug) == PROVIDE_SERVICE
+        ]
 
     @property
     @abstractmethod
@@ -56,9 +56,7 @@ class ServiceInterface(CoreSysAttributes, ABC):
 
     def get_service_data(self) -> Optional[dict[str, Any]]:
         """Return the requested service data."""
-        if self.enabled:
-            return self._data
-        return None
+        return self._data if self.enabled else None
 
     @abstractmethod
     def set_service_data(self, addon: Addon, data: dict[str, Any]) -> None:

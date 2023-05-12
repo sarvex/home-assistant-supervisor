@@ -143,11 +143,10 @@ class APIAddons(CoreSysAttributes):
                 raise APIError("Self is not an Addon")
             return addon
 
-        addon = self.sys_addons.get(addon_slug)
-        if not addon:
+        if addon := self.sys_addons.get(addon_slug):
+            return addon
+        else:
             raise APIError(f"Addon {addon_slug} does not exist")
-
-        return addon
 
     def _extract_addon_installed(self, request: web.Request) -> Addon:
         addon = self._extract_addon(request)
@@ -277,25 +276,23 @@ class APIAddons(CoreSysAttributes):
         }
 
         if isinstance(addon, Addon) and addon.is_installed:
-            data.update(
-                {
-                    ATTR_STATE: addon.state,
-                    ATTR_WEBUI: addon.webui,
-                    ATTR_INGRESS_ENTRY: addon.ingress_entry,
-                    ATTR_INGRESS_URL: addon.ingress_url,
-                    ATTR_INGRESS_PORT: addon.ingress_port,
-                    ATTR_INGRESS_PANEL: addon.ingress_panel,
-                    ATTR_AUDIO_INPUT: addon.audio_input,
-                    ATTR_AUDIO_OUTPUT: addon.audio_output,
-                    ATTR_AUTO_UPDATE: addon.auto_update,
-                    ATTR_IP_ADDRESS: str(addon.ip_address),
-                    ATTR_VERSION: addon.version,
-                    ATTR_UPDATE_AVAILABLE: addon.need_update,
-                    ATTR_WATCHDOG: addon.watchdog,
-                    ATTR_DEVICES: addon.static_devices
-                    + [device.path for device in addon.devices],
-                }
-            )
+            data |= {
+                ATTR_STATE: addon.state,
+                ATTR_WEBUI: addon.webui,
+                ATTR_INGRESS_ENTRY: addon.ingress_entry,
+                ATTR_INGRESS_URL: addon.ingress_url,
+                ATTR_INGRESS_PORT: addon.ingress_port,
+                ATTR_INGRESS_PANEL: addon.ingress_panel,
+                ATTR_AUDIO_INPUT: addon.audio_input,
+                ATTR_AUDIO_OUTPUT: addon.audio_output,
+                ATTR_AUTO_UPDATE: addon.auto_update,
+                ATTR_IP_ADDRESS: str(addon.ip_address),
+                ATTR_VERSION: addon.version,
+                ATTR_UPDATE_AVAILABLE: addon.need_update,
+                ATTR_WATCHDOG: addon.watchdog,
+                ATTR_DEVICES: addon.static_devices
+                + [device.path for device in addon.devices],
+            }
 
         return data
 

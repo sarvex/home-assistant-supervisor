@@ -35,12 +35,12 @@ class APIDocker(CoreSysAttributes):
     @api_process
     async def registries(self, request) -> dict[str, Any]:
         """Return the list of registries."""
-        data_registries = {}
-        for hostname, registry in self.sys_docker.config.registries.items():
-            data_registries[hostname] = {
+        data_registries = {
+            hostname: {
                 ATTR_USERNAME: registry[ATTR_USERNAME],
             }
-
+            for hostname, registry in self.sys_docker.config.registries.items()
+        }
         return {ATTR_REGISTRIES: data_registries}
 
     @api_process
@@ -63,11 +63,12 @@ class APIDocker(CoreSysAttributes):
     @api_process
     async def info(self, request: web.Request):
         """Get docker info."""
-        data_registries = {}
-        for hostname, registry in self.sys_docker.config.registries.items():
-            data_registries[hostname] = {
+        data_registries = {
+            hostname: {
                 ATTR_USERNAME: registry[ATTR_USERNAME],
             }
+            for hostname, registry in self.sys_docker.config.registries.items()
+        }
         return {
             ATTR_VERSION: self.sys_docker.info.version,
             ATTR_STORAGE: self.sys_docker.info.storage,

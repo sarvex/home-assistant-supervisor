@@ -41,4 +41,4 @@ async def test_bus_event_not_called(coresys: CoreSys) -> None:
 
     coresys.bus.fire_event(BusEvent.HARDWARE_REMOVE_DEVICE, None)
     await asyncio.sleep(0)
-    assert len(results) == 0
+    assert not results

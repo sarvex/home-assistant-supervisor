@@ -60,16 +60,12 @@ class DockerInterface(CoreSysAttributes):
     @property
     def meta_config(self) -> dict[str, Any]:
         """Return meta data of configuration for container/image."""
-        if not self._meta:
-            return {}
-        return self._meta.get("Config", {})
+        return {} if not self._meta else self._meta.get("Config", {})
 
     @property
     def meta_host(self) -> dict[str, Any]:
         """Return meta data of configuration for host."""
-        if not self._meta:
-            return {}
-        return self._meta.get("HostConfig", {})
+        return {} if not self._meta else self._meta.get("HostConfig", {})
 
     @property
     def meta_labels(self) -> dict[str, str]:
@@ -112,15 +108,11 @@ class DockerInterface(CoreSysAttributes):
         """Return a dictionay with credentials for docker login."""
         registry = None
         credentials = {}
-        matcher = IMAGE_WITH_HOST.match(image)
-
-        # Custom registry
-        if matcher:
+        if matcher := IMAGE_WITH_HOST.match(image):
             if matcher.group(1) in self.sys_docker.config.registries:
                 registry = matcher.group(1)
                 credentials[ATTR_REGISTRY] = registry
 
-        # If no match assume "dockerhub" as registry
         elif DOCKER_HUB in self.sys_docker.config.registries:
             registry = DOCKER_HUB
 
@@ -142,11 +134,10 @@ class DockerInterface(CoreSysAttributes):
         if not self.sys_docker.config.registries:
             return
 
-        credentials = self._get_credentials(image)
-        if not credentials:
+        if credentials := self._get_credentials(image):
+            self.sys_docker.docker.login(**credentials)
+        else:
             return
-
-        self.sys_docker.docker.login(**credentials)
 
     @process_lock
     def install(

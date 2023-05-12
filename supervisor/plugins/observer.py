@@ -147,16 +147,13 @@ class PluginObserver(PluginBase):
 
     async def check_system_runtime(self) -> bool:
         """Check if the observer is running."""
-        try:
+        with suppress(aiohttp.ClientError, asyncio.TimeoutError):
             timeout = aiohttp.ClientTimeout(total=10)
             async with self.sys_websession.get(
                 f"http://{self.sys_docker.network.observer!s}/ping", timeout=timeout
             ) as request:
                 if request.status == 200:
                     return True
-        except (aiohttp.ClientError, asyncio.TimeoutError):
-            pass
-
         return False
 
     async def repair(self) -> None:

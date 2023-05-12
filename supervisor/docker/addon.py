@@ -81,16 +81,12 @@ class DockerAddon(DockerInterface):
     @property
     def version(self) -> AwesomeVersion:
         """Return version of Docker image."""
-        if self.addon.legacy:
-            return self.addon.version
-        return super().version
+        return self.addon.version if self.addon.legacy else super().version
 
     @property
     def arch(self) -> str:
         """Return arch of Docker image."""
-        if self.addon.legacy:
-            return self.sys_arch.default
-        return super().arch
+        return self.sys_arch.default if self.addon.legacy else super().arch
 
     @property
     def name(self) -> str:
@@ -172,9 +168,7 @@ class DockerAddon(DockerInterface):
             return [self.sys_hardware.policy.get_full_access()]
 
         # Return None if no rules is present
-        if rules:
-            return list(rules)
-        return None
+        return list(rules) if rules else None
 
     @property
     def ports(self) -> dict[str, str | int | None] | None:
@@ -216,9 +210,7 @@ class DockerAddon(DockerInterface):
             tmpfs["/dev/shm"] = ""
 
         # Return None if no tmpfs is present
-        if tmpfs:
-            return tmpfs
-        return None
+        return tmpfs if tmpfs else None
 
     @property
     def network_mapping(self) -> dict[str, IPv4Address]:
@@ -231,16 +223,12 @@ class DockerAddon(DockerInterface):
     @property
     def network_mode(self) -> str | None:
         """Return network mode for add-on."""
-        if self.addon.host_network:
-            return "host"
-        return None
+        return "host" if self.addon.host_network else None
 
     @property
     def pid_mode(self) -> str | None:
         """Return PID mode for add-on."""
-        if not self.addon.protected and self.addon.host_pid:
-            return "host"
-        return None
+        return "host" if not self.addon.protected and self.addon.host_pid else None
 
     @property
     def capabilities(self) -> list[str] | None:
@@ -256,9 +244,7 @@ class DockerAddon(DockerInterface):
             capabilities.add(Capabilities.SYS_NICE)
 
         # Return None if no capabilities is present
-        if capabilities:
-            return [cap.value for cap in capabilities]
-        return None
+        return [cap.value for cap in capabilities] if capabilities else None
 
     @property
     def ulimits(self) -> list[docker.types.Ulimit] | None:
@@ -274,9 +260,7 @@ class DockerAddon(DockerInterface):
             limits.append(docker.types.Ulimit(name="memlock", soft=mem, hard=mem))
 
         # Return None if no capabilities is present
-        if limits:
-            return limits
-        return None
+        return limits if limits else None
 
     @property
     def cpu_rt_runtime(self) -> int | None:
@@ -285,9 +269,7 @@ class DockerAddon(DockerInterface):
             return None
 
         # If need CPU RT
-        if self.addon.with_realtime:
-            return DOCKER_CPU_RUNTIME_ALLOCATION
-        return None
+        return DOCKER_CPU_RUNTIME_ALLOCATION if self.addon.with_realtime else None
 
     @property
     def volumes(self) -> dict[str, dict[str, str]]:
@@ -301,64 +283,40 @@ class DockerAddon(DockerInterface):
 
         # setup config mappings
         if MAP_CONFIG in addon_mapping:
-            volumes.update(
-                {
-                    str(self.sys_config.path_extern_homeassistant): {
-                        "bind": "/config",
-                        "mode": addon_mapping[MAP_CONFIG],
-                    }
-                }
-            )
+            volumes[str(self.sys_config.path_extern_homeassistant)] = {
+                "bind": "/config",
+                "mode": addon_mapping[MAP_CONFIG],
+            }
 
         if MAP_SSL in addon_mapping:
-            volumes.update(
-                {
-                    str(self.sys_config.path_extern_ssl): {
-                        "bind": "/ssl",
-                        "mode": addon_mapping[MAP_SSL],
-                    }
-                }
-            )
+            volumes[str(self.sys_config.path_extern_ssl)] = {
+                "bind": "/ssl",
+                "mode": addon_mapping[MAP_SSL],
+            }
 
         if MAP_ADDONS in addon_mapping:
-            volumes.update(
-                {
-                    str(self.sys_config.path_extern_addons_local): {
-                        "bind": "/addons",
-                        "mode": addon_mapping[MAP_ADDONS],
-                    }
-                }
-            )
+            volumes[str(self.sys_config.path_extern_addons_local)] = {
+                "bind": "/addons",
+                "mode": addon_mapping[MAP_ADDONS],
+            }
 
         if MAP_BACKUP in addon_mapping:
-            volumes.update(
-                {
-                    str(self.sys_config.path_extern_backup): {
-                        "bind": "/backup",
-                        "mode": addon_mapping[MAP_BACKUP],
-                    }
-                }
-            )
+            volumes[str(self.sys_config.path_extern_backup)] = {
+                "bind": "/backup",
+                "mode": addon_mapping[MAP_BACKUP],
+            }
 
         if MAP_SHARE in addon_mapping:
-            volumes.update(
-                {
-                    str(self.sys_config.path_extern_share): {
-                        "bind": "/share",
-                        "mode": addon_mapping[MAP_SHARE],
-                    }
-                }
-            )
+            volumes[str(self.sys_config.path_extern_share)] = {
+                "bind": "/share",
+                "mode": addon_mapping[MAP_SHARE],
+            }
 
         if MAP_MEDIA in addon_mapping:
-            volumes.update(
-                {
-                    str(self.sys_config.path_extern_media): {
-                        "bind": "/media",
-                        "mode": addon_mapping[MAP_MEDIA],
-                    }
-                }
-            )
+            volumes[str(self.sys_config.path_extern_media)] = {
+                "bind": "/media",
+                "mode": addon_mapping[MAP_MEDIA],
+            }
 
         # Init other hardware mappings
 
@@ -367,70 +325,60 @@ class DockerAddon(DockerInterface):
             for gpio_path in ("/sys/class/gpio", "/sys/devices/platform/soc"):
                 if not Path(gpio_path).exists():
                     continue
-                volumes.update({gpio_path: {"bind": gpio_path, "mode": "rw"}})
+                volumes[gpio_path] = {"bind": gpio_path, "mode": "rw"}
 
         # DeviceTree support
         if self.addon.with_devicetree:
-            volumes.update(
-                {
-                    "/sys/firmware/devicetree/base": {
-                        "bind": "/device-tree",
-                        "mode": "ro",
-                    }
-                }
-            )
+            volumes["/sys/firmware/devicetree/base"] = {
+                "bind": "/device-tree",
+                "mode": "ro",
+            }
 
         # Host udev support
         if self.addon.with_udev:
-            volumes.update({"/run/udev": {"bind": "/run/udev", "mode": "ro"}})
+            volumes["/run/udev"] = {"bind": "/run/udev", "mode": "ro"}
 
         # Kernel Modules support
         if self.addon.with_kernel_modules:
-            volumes.update({"/lib/modules": {"bind": "/lib/modules", "mode": "ro"}})
+            volumes["/lib/modules"] = {"bind": "/lib/modules", "mode": "ro"}
 
         # Docker API support
         if not self.addon.protected and self.addon.access_docker_api:
-            volumes.update(
-                {"/run/docker.sock": {"bind": "/run/docker.sock", "mode": "ro"}}
-            )
+            volumes["/run/docker.sock"] = {"bind": "/run/docker.sock", "mode": "ro"}
 
         # Host D-Bus system
         if self.addon.host_dbus:
-            volumes.update({"/run/dbus": {"bind": "/run/dbus", "mode": "ro"}})
+            volumes["/run/dbus"] = {"bind": "/run/dbus", "mode": "ro"}
 
         # Configuration Audio
         if self.addon.with_audio:
-            volumes.update(
-                {
-                    str(self.addon.path_extern_pulse): {
-                        "bind": "/etc/pulse/client.conf",
-                        "mode": "ro",
-                    },
-                    str(self.sys_plugins.audio.path_extern_pulse): {
-                        "bind": "/run/audio",
-                        "mode": "ro",
-                    },
-                    str(self.sys_plugins.audio.path_extern_asound): {
-                        "bind": "/etc/asound.conf",
-                        "mode": "ro",
-                    },
-                }
-            )
+            volumes |= {
+                str(self.addon.path_extern_pulse): {
+                    "bind": "/etc/pulse/client.conf",
+                    "mode": "ro",
+                },
+                str(self.sys_plugins.audio.path_extern_pulse): {
+                    "bind": "/run/audio",
+                    "mode": "ro",
+                },
+                str(self.sys_plugins.audio.path_extern_asound): {
+                    "bind": "/etc/asound.conf",
+                    "mode": "ro",
+                },
+            }
 
         # System Journal access
         if self.addon.with_journald:
-            volumes.update(
-                {
-                    str(SYSTEMD_JOURNAL_PERSISTENT): {
-                        "bind": str(SYSTEMD_JOURNAL_PERSISTENT),
-                        "mode": "ro",
-                    },
-                    str(SYSTEMD_JOURNAL_VOLATILE): {
-                        "bind": str(SYSTEMD_JOURNAL_VOLATILE),
-                        "mode": "ro",
-                    },
-                }
-            )
+            volumes |= {
+                str(SYSTEMD_JOURNAL_PERSISTENT): {
+                    "bind": str(SYSTEMD_JOURNAL_PERSISTENT),
+                    "mode": "ro",
+                },
+                str(SYSTEMD_JOURNAL_VOLATILE): {
+                    "bind": str(SYSTEMD_JOURNAL_VOLATILE),
+                    "mode": "ro",
+                },
+            }
 
         return volumes
 

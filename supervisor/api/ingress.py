@@ -56,15 +56,15 @@ class APIIngress(CoreSysAttributes):
     @api_process
     async def panels(self, request: web.Request) -> dict[str, Any]:
         """Create a list of panel data."""
-        addons = {}
-        for addon in self.sys_ingress.addons:
-            addons[addon.slug] = {
+        addons = {
+            addon.slug: {
                 ATTR_TITLE: addon.panel_title,
                 ATTR_ICON: addon.panel_icon,
                 ATTR_ADMIN: addon.panel_admin,
                 ATTR_ENABLE: addon.ingress_panel,
             }
-
+            for addon in self.sys_ingress.addons
+        }
         return {ATTR_PANELS: addons}
 
     @api_process
@@ -222,11 +222,11 @@ def _init_header(
     request: web.Request, addon: str
 ) -> Union[CIMultiDict, dict[str, str]]:
     """Create initial header."""
-    headers = {}
-
-    # filter flags
-    for name, value in request.headers.items():
-        if name in (
+    headers = {
+        name: value
+        for name, value in request.headers.items()
+        if name
+        not in (
             hdrs.CONTENT_LENGTH,
             hdrs.CONTENT_ENCODING,
             hdrs.TRANSFER_ENCODING,
@@ -236,10 +236,8 @@ def _init_header(
             hdrs.SEC_WEBSOCKET_KEY,
             istr(HEADER_TOKEN),
             istr(HEADER_TOKEN_OLD),
-        ):
-            continue
-        headers[name] = value
-
+        )
+    }
     # Update X-Forwarded-For
     forward_for = request.headers.get(hdrs.X_FORWARDED_FOR)
     connected_ip = ip_address(request.transport.get_extra_info("peername")[0])
@@ -250,31 +248,27 @@ def _init_header(
 
 def _response_header(response: aiohttp.ClientResponse) -> dict[str, str]:
     """Create response header."""
-    headers = {}
-
-    for name, value in response.headers.items():
-        if name in (
+    return {
+        name: value
+        for name, value in response.headers.items()
+        if name
+        not in (
             hdrs.TRANSFER_ENCODING,
             hdrs.CONTENT_LENGTH,
             hdrs.CONTENT_TYPE,
             hdrs.CONTENT_ENCODING,
-        ):
-            continue
-        headers[name] = value
-
-    return headers
+        )
+    }
 
 
 def _is_websocket(request: web.Request) -> bool:
     """Return True if request is a websocket."""
     headers = request.headers
 
-    if (
+    return (
         "upgrade" in headers.get(hdrs.CONNECTION, "").lower()
         and headers.get(hdrs.UPGRADE, "").lower() == "websocket"
-    ):
-        return True
-    return False
+    )
 
 
 async def _websocket_forward(ws_from, ws_to):

@@ -61,16 +61,14 @@ class AddonManager(CoreSysAttributes):
         """
         if addon_slug in self.local:
             return self.local[addon_slug]
-        if not local_only:
-            return self.store.get(addon_slug)
-        return None
+        return self.store.get(addon_slug) if not local_only else None
 
     def from_token(self, token: str) -> Optional[Addon]:
         """Return an add-on from Supervisor token."""
-        for addon in self.installed:
-            if token == addon.supervisor_token:
-                return addon
-        return None
+        return next(
+            (addon for addon in self.installed if token == addon.supervisor_token),
+            None,
+        )
 
     async def load(self) -> None:
         """Start up add-on management."""
@@ -89,12 +87,11 @@ class AddonManager(CoreSysAttributes):
 
     async def boot(self, stage: AddonStartup) -> None:
         """Boot add-ons with mode auto."""
-        tasks: list[Addon] = []
-        for addon in self.installed:
-            if addon.boot != AddonBoot.AUTO or addon.startup != stage:
-                continue
-            tasks.append(addon)
-
+        tasks: list[Addon] = [
+            addon
+            for addon in self.installed
+            if addon.boot == AddonBoot.AUTO and addon.startup == stage
+        ]
         # Evaluate add-ons which need to be started
         _LOGGER.info("Phase '%s' starting %d add-ons", stage, len(tasks))
         if not tasks:
@@ -123,12 +120,11 @@ class AddonManager(CoreSysAttributes):
 
     async def shutdown(self, stage: AddonStartup) -> None:
         """Shutdown addons."""
-        tasks: list[Addon] = []
-        for addon in self.installed:
-            if addon.state != AddonState.STARTED or addon.startup != stage:
-                continue
-            tasks.append(addon)
-
+        tasks: list[Addon] = [
+            addon
+            for addon in self.installed
+            if addon.state == AddonState.STARTED and addon.startup == stage
+        ]
         # Evaluate add-ons which need to be stopped
         _LOGGER.info("Phase '%s' stopping %d add-ons", stage, len(tasks))
         if not tasks:
@@ -394,7 +390,7 @@ class AddonManager(CoreSysAttributes):
                     continue
 
                 # Need local lookup
-                if addon.need_build and not addon.is_detached:
+                if not addon.is_detached:
                     store = self.store[addon.slug]
                     # If this add-on is available for rebuild
                     if addon.version == store.version:

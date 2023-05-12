@@ -10,9 +10,7 @@ def schema_or(schema):
 
     def _wrapper(value):
         """Define a wrapper for validator."""
-        if not value:
-            return value
-        return schema(value)
+        return value if not value else schema(value)
 
     return _wrapper
 

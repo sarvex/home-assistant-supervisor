@@ -84,7 +84,7 @@ class CpuArch(CoreSysAttributes):
     def detect_cpu(self) -> str:
         """Return the arch type of local CPU."""
         cpu = platform.machine()
-        for check, value in MAP_CPU.items():
-            if cpu.startswith(check):
-                return value
-        return self.sys_supervisor.arch
+        return next(
+            (value for check, value in MAP_CPU.items() if cpu.startswith(check)),
+            self.sys_supervisor.arch,
+        )

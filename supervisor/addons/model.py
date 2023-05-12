@@ -180,11 +180,7 @@ class AddonModel(CoreSysAttributes, ABC):
         readme = Path(self.path_location, "README.md")
 
         # If readme not exists
-        if not readme.exists():
-            return None
-
-        # Return data
-        return readme.read_text(encoding="utf-8")
+        return None if not readme.exists() else readme.read_text(encoding="utf-8")
 
     @property
     def repository(self) -> str:
@@ -233,8 +229,7 @@ class AddonModel(CoreSysAttributes, ABC):
 
         services = {}
         for data in services_list:
-            service = RE_SERVICE.match(data)
-            if service:
+            if service := RE_SERVICE.match(data):
                 services[service.group("service")] = service.group("rights")
 
         return services
@@ -518,10 +513,8 @@ class AddonModel(CoreSysAttributes, ABC):
         """Return a dict of {volume: policy} from add-on."""
         volumes = {}
         for volume in self.data[ATTR_MAP]:
-            result = RE_VOLUME.match(volume)
-            if not result:
-                continue
-            volumes[result.group(1)] = result.group(2) or "ro"
+            if result := RE_VOLUME.match(volume):
+                volumes[result.group(1)] = result.group(2) or "ro"
 
         return volumes
 
@@ -580,9 +573,7 @@ class AddonModel(CoreSysAttributes, ABC):
 
     def __eq__(self, other):
         """Compaired add-on objects."""
-        if not isinstance(other, AddonModel):
-            return False
-        return self.slug == other.slug
+        return False if not isinstance(other, AddonModel) else self.slug == other.slug
 
     def _available(self, config) -> bool:
         """Return True if this add-on is available on this platform."""
@@ -590,12 +581,11 @@ class AddonModel(CoreSysAttributes, ABC):
         if not self.sys_arch.is_supported(config[ATTR_ARCH]):
             return False
 
-        # Machine / Hardware
-        machine = config.get(ATTR_MACHINE)
-        if machine and f"!{self.sys_machine}" in machine:
-            return False
-        elif machine and self.sys_machine not in machine:
-            return False
+        if machine := config.get(ATTR_MACHINE):
+            if f"!{self.sys_machine}" in machine:
+                return False
+            elif self.sys_machine not in machine:
+                return False
 
         # Home Assistant
         version: Optional[AwesomeVersion] = config.get(ATTR_HOMEASSISTANT)

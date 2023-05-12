@@ -138,8 +138,7 @@ class AddonOptions(CoreSysAttributes):
         # prepare range
         range_args = {}
         for group_name in _SCHEMA_LENGTH_PARTS:
-            group_value = match.group(group_name)
-            if group_value:
+            if group_value := match.group(group_name):
                 range_args[group_name[2:]] = float(group_value)
 
         if typ.startswith(_STR) or typ.startswith(_PASSWORD):
@@ -389,13 +388,6 @@ class UiOptions(CoreSysAttributes):
         multiple: bool = False,
     ) -> None:
         """UI nested dict items."""
-        ui_node = {
-            "name": key,
-            "type": "schema",
-            "optional": True,
-            "multiple": multiple,
-        }
-
         nested_schema = []
         for c_key, c_value in option_dict.items():
             # Nested?
@@ -404,7 +396,13 @@ class UiOptions(CoreSysAttributes):
             else:
                 self._single_ui_option(nested_schema, c_value, c_key)
 
-        ui_node["schema"] = nested_schema
+        ui_node = {
+            "name": key,
+            "type": "schema",
+            "optional": True,
+            "multiple": multiple,
+            "schema": nested_schema,
+        }
         ui_schema.append(ui_node)
 
 
@@ -412,11 +410,7 @@ def _create_device_filter(str_filter: str) -> dict[str, Any]:
     """Generate device Filter."""
     raw_filter = dict(value.split("=") for value in str_filter.split(";"))
 
-    clean_filter = {}
-    for key, value in raw_filter.items():
-        if key == "subsystem":
-            clean_filter[key] = UdevSubsystem(value)
-        else:
-            clean_filter[key] = value
-
-    return clean_filter
+    return {
+        key: UdevSubsystem(value) if key == "subsystem" else value
+        for key, value in raw_filter.items()
+    }

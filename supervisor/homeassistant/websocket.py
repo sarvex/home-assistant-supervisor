@@ -95,13 +95,11 @@ class HomeAssistantWebSocket(CoreSysAttributes):
                 return self._client
 
             await self.sys_homeassistant.api.ensure_access_token()
-            client = await WSClient.connect_with_auth(
+            return await WSClient.connect_with_auth(
                 self.sys_websession,
                 f"{self.sys_homeassistant.api_url}/api/websocket",
                 self.sys_homeassistant.api.access_token,
             )
-
-            return client
 
     async def async_send_command(self, message: dict[str, Any]):
         """Send a command with the WS client."""

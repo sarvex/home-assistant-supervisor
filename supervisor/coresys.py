@@ -106,9 +106,7 @@ class CoreSys:
         """Return system timezone."""
         if self.config.timezone:
             return self.config.timezone
-        if self.host.info.timezone:
-            return self.host.info.timezone
-        return "UTC"
+        return self.host.info.timezone if self.host.info.timezone else "UTC"
 
     @property
     def loop(self) -> asyncio.BaseEventLoop:

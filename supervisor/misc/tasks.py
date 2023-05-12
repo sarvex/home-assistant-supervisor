@@ -457,9 +457,7 @@ class Tasks(CoreSysAttributes):
         elif (
             self.sys_supervisor.connectivity
             and self.sys_host.network.connectivity is None
-        ) or (
-            self.sys_supervisor.connectivity
-            and self.sys_host.network.connectivity is not None
+            or self.sys_supervisor.connectivity
             and self.sys_host.network.connectivity
         ):
             self._cache["connectivity"] = value + RUN_CHECK_CONNECTIVITY

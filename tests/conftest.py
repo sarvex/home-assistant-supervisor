@@ -82,7 +82,7 @@ def dbus() -> DBus:
 
     async def mock_wait_for_signal(self):
         if (
-            self._interface + "." + self._method
+            f"{self._interface}.{self._method}"
             == DBUS_SIGNAL_NM_CONNECTION_ACTIVE_CHANGED
         ):
             return [2, 0]

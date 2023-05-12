@@ -36,18 +36,14 @@ class DataDisk(CoreSysAttributes):
     @property
     def available_disks(self) -> list[Path]:
         """Return a list of possible new disk locations."""
-        device_paths: list[Path] = []
-        for device in self.sys_hardware.devices:
-            # Filter devices out which can't be a target
-            if (
-                device.subsystem != UdevSubsystem.DISK
-                or device.attributes.get("DEVTYPE") != "disk"
-                or device.minor != 0
-                or self.sys_hardware.disk.is_used_by_system(device)
-            ):
-                continue
-            device_paths.append(device.path)
-
+        device_paths: list[Path] = [
+            device.path
+            for device in self.sys_hardware.devices
+            if device.subsystem == UdevSubsystem.DISK
+            and device.attributes.get("DEVTYPE") == "disk"
+            and device.minor == 0
+            and not self.sys_hardware.disk.is_used_by_system(device)
+        ]
         return device_paths
 
     @Job(conditions=[JobCondition.OS_AGENT])

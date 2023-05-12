@@ -29,16 +29,18 @@ class CheckCoreSecurity(CheckBase):
         """Run check if not affected by issue."""
         # Security issue < 2021.1.5 & Custom components
         try:
-            if self.sys_homeassistant.version < AwesomeVersion("2021.1.5"):
-                if Path(
+            if (
+                self.sys_homeassistant.version < AwesomeVersion("2021.1.5")
+                and Path(
                     self.sys_config.path_homeassistant, "custom_components"
-                ).exists():
-                    self.sys_resolution.create_issue(
-                        IssueType.SECURITY,
-                        ContextType.CORE,
-                        reference=SecurityReference.CUSTOM_COMPONENTS_BELOW_2021_1_5,
-                        suggestions=[SuggestionType.EXECUTE_UPDATE],
-                    )
+                ).exists()
+            ):
+                self.sys_resolution.create_issue(
+                    IssueType.SECURITY,
+                    ContextType.CORE,
+                    reference=SecurityReference.CUSTOM_COMPONENTS_BELOW_2021_1_5,
+                    suggestions=[SuggestionType.EXECUTE_UPDATE],
+                )
         except (AwesomeVersionException, OSError):
             return
 
@@ -49,9 +51,9 @@ class CheckCoreSecurity(CheckBase):
                 return False
         except AwesomeVersionException:
             return True
-        if not Path(self.sys_config.path_homeassistant, "custom_components").exists():
-            return False
-        return True
+        return bool(
+            Path(self.sys_config.path_homeassistant, "custom_components").exists()
+        )
 
     @property
     def issue(self) -> IssueType:

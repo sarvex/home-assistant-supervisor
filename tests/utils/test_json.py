@@ -7,7 +7,7 @@ def test_file_permissions(tmp_path):
     tempfile = tmp_path / "test.json"
     write_json_file(tempfile, {"test": "data"})
     assert tempfile.is_file()
-    assert oct(tempfile.stat().st_mode)[-3:] == "600"
+    assert oct(tempfile.stat().st_mode).endswith("600")
 
 
 def test_new_file_permissions(tmp_path):
@@ -17,4 +17,4 @@ def test_new_file_permissions(tmp_path):
     assert oct(tempfile.stat().st_mode)[-3:] != "600"
 
     write_json_file(tempfile, {"test": "data"})
-    assert oct(tempfile.stat().st_mode)[-3:] == "600"
+    assert oct(tempfile.stat().st_mode).endswith("600")

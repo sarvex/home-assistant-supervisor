@@ -59,10 +59,10 @@ class NetworkManager(CoreSysAttributes):
     @property
     def interfaces(self) -> list[Interface]:
         """Return a dictionary of active interfaces."""
-        interfaces: list[Interface] = []
-        for inet in self.sys_dbus.network.interfaces.values():
-            interfaces.append(Interface.from_dbus_interface(inet))
-
+        interfaces: list[Interface] = [
+            Interface.from_dbus_interface(inet)
+            for inet in self.sys_dbus.network.interfaces.values()
+        ]
         return interfaces
 
     @property
@@ -147,7 +147,6 @@ class NetworkManager(CoreSysAttributes):
                     f"Can't update config on {interface.name}: {err}", _LOGGER.error
                 ) from err
 
-        # Create new configuration and activate interface
         elif inet and interface.enabled:
             _LOGGER.debug("Create new configuration for %s", interface.name)
             settings = get_connection_from_interface(interface)
@@ -166,8 +165,7 @@ class NetworkManager(CoreSysAttributes):
                     _LOGGER.error,
                 ) from err
 
-        # Remove config from interface
-        elif inet and inet.settings and not interface.enabled:
+        elif inet and inet.settings:
             try:
                 await inet.settings.delete()
             except DBusError as err:
@@ -175,7 +173,6 @@ class NetworkManager(CoreSysAttributes):
                     f"Can't disable interface {interface.name}: {err}", _LOGGER.error
                 ) from err
 
-        # Create new interface (like vlan)
         elif not inet:
             settings = get_connection_from_interface(interface)
 
@@ -391,11 +388,7 @@ class Interface:
             mode = WifiMode(inet.settings.wireless.mode)
 
         # Signal
-        if inet.wireless:
-            signal = inet.wireless.active.strength
-        else:
-            signal = None
-
+        signal = inet.wireless.active.strength if inet.wireless else None
         return WifiConfig(
             mode,
             inet.settings.wireless.ssid,

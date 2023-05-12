@@ -61,11 +61,10 @@ class APIStore(CoreSysAttributes):
         """Return repository, throw an exception it it doesn't exist."""
         repository_slug: str = request.match_info.get("repository")
 
-        repository = self.sys_store.get(repository_slug)
-        if not repository:
+        if repository := self.sys_store.get(repository_slug):
+            return repository
+        else:
             raise APIError(f"Repository {repository_slug} does not exist in the store")
-
-        return repository
 
     def _generate_addon_information(self, addon: AddonStore) -> dict[str, Any]:
         """Generate addon information."""

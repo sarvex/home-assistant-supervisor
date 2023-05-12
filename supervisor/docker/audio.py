@@ -45,7 +45,7 @@ class DockerAudio(DockerInterface, CoreSysAttributes):
 
         # Machine ID
         if MACHINE_ID.exists():
-            volumes.update({str(MACHINE_ID): {"bind": str(MACHINE_ID), "mode": "ro"}})
+            volumes[str(MACHINE_ID)] = {"bind": str(MACHINE_ID), "mode": "ro"}
 
         return volumes
 

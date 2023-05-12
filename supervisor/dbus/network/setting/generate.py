@@ -56,9 +56,7 @@ def get_connection_from_interface(
     if interface.type != InterfaceType.VLAN:
         connection["interface-name"] = Variant("s", interface.name)
 
-    conn = {}
-    conn[CONF_ATTR_CONNECTION] = connection
-
+    conn = {CONF_ATTR_CONNECTION: connection}
     ipv4 = {}
     if not interface.ipv4 or interface.ipv4.method == InterfaceMethod.AUTO:
         ipv4["method"] = Variant("s", "auto")
@@ -74,15 +72,15 @@ def get_connection_from_interface(
             ],
         )
 
-        adressdata = []
-        for address in interface.ipv4.address:
-            adressdata.append(
-                {
-                    "address": Variant("s", str(address.ip)),
-                    "prefix": Variant("u", int(address.with_prefixlen.split("/")[-1])),
-                }
-            )
-
+        adressdata = [
+            {
+                "address": Variant("s", str(address.ip)),
+                "prefix": Variant(
+                    "u", int(address.with_prefixlen.split("/")[-1])
+                ),
+            }
+            for address in interface.ipv4.address
+        ]
         ipv4["address-data"] = Variant("aa{sv}", adressdata)
         ipv4["gateway"] = Variant("s", str(interface.ipv4.gateway))
 
@@ -99,15 +97,15 @@ def get_connection_from_interface(
             "aay", [ip_address.packed for ip_address in interface.ipv6.nameservers]
         )
 
-        adressdata = []
-        for address in interface.ipv6.address:
-            adressdata.append(
-                {
-                    "address": Variant("s", str(address.ip)),
-                    "prefix": Variant("u", int(address.with_prefixlen.split("/")[-1])),
-                }
-            )
-
+        adressdata = [
+            {
+                "address": Variant("s", str(address.ip)),
+                "prefix": Variant(
+                    "u", int(address.with_prefixlen.split("/")[-1])
+                ),
+            }
+            for address in interface.ipv6.address
+        ]
         ipv6["address-data"] = Variant("aa{sv}", adressdata)
         ipv6["gateway"] = Variant("s", str(interface.ipv6.gateway))
 

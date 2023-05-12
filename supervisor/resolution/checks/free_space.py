@@ -52,9 +52,7 @@ class CheckFreeSpace(CheckBase):
 
     async def approve_check(self, reference: Optional[str] = None) -> bool:
         """Approve check if it is affected by issue."""
-        if self.sys_host.info.free_space > MINIMUM_FREE_SPACE_THRESHOLD:
-            return False
-        return True
+        return self.sys_host.info.free_space <= MINIMUM_FREE_SPACE_THRESHOLD
 
     @property
     def issue(self) -> IssueType:

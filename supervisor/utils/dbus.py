@@ -27,10 +27,7 @@ def _remove_dbus_signature(data: Any) -> Any:
             data[k] = _remove_dbus_signature(data[k])
         return data
     elif isinstance(data, list):
-        new_list = []
-        for item in data:
-            new_list.append(_remove_dbus_signature(item))
-        return new_list
+        return [_remove_dbus_signature(item) for item in data]
     else:
         return data
 

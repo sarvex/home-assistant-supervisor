@@ -85,23 +85,21 @@ class APISupervisor(CoreSysAttributes):
     @api_process
     async def info(self, request: web.Request) -> dict[str, Any]:
         """Return host information."""
-        list_addons = []
-        for addon in self.sys_addons.installed:
-            list_addons.append(
-                {
-                    ATTR_NAME: addon.name,
-                    ATTR_SLUG: addon.slug,
-                    ATTR_DESCRIPTON: addon.description,
-                    ATTR_STATE: addon.state,
-                    ATTR_VERSION: addon.version,
-                    ATTR_VERSION_LATEST: addon.latest_version,
-                    ATTR_UPDATE_AVAILABLE: addon.need_update,
-                    ATTR_REPOSITORY: addon.repository,
-                    ATTR_ICON: addon.with_icon,
-                    ATTR_LOGO: addon.with_logo,
-                }
-            )
-
+        list_addons = [
+            {
+                ATTR_NAME: addon.name,
+                ATTR_SLUG: addon.slug,
+                ATTR_DESCRIPTON: addon.description,
+                ATTR_STATE: addon.state,
+                ATTR_VERSION: addon.version,
+                ATTR_VERSION_LATEST: addon.latest_version,
+                ATTR_UPDATE_AVAILABLE: addon.need_update,
+                ATTR_REPOSITORY: addon.repository,
+                ATTR_ICON: addon.with_icon,
+                ATTR_LOGO: addon.with_logo,
+            }
+            for addon in self.sys_addons.installed
+        ]
         return {
             ATTR_VERSION: self.sys_supervisor.version,
             ATTR_VERSION_LATEST: self.sys_supervisor.latest_version,

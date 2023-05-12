@@ -44,12 +44,7 @@ class Ingress(FileConfiguration, CoreSysAttributes):
     @property
     def addons(self) -> list[Addon]:
         """Return list of ingress Add-ons."""
-        addons = []
-        for addon in self.sys_addons.installed:
-            if not addon.with_ingress:
-                continue
-            addons.append(addon)
-        return addons
+        return [addon for addon in self.sys_addons.installed if addon.with_ingress]
 
     async def load(self) -> None:
         """Update internal data."""

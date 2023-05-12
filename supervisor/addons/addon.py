@@ -189,9 +189,7 @@ class Addon(AddonModel):
     @property
     def need_update(self) -> bool:
         """Return True if an update is available."""
-        if self.is_detached:
-            return False
-        return self.version != self.latest_version
+        return False if self.is_detached else self.version != self.latest_version
 
     @property
     def dns(self) -> list[str]:
@@ -294,12 +292,11 @@ class Addon(AddonModel):
             self.persist.pop(ATTR_NETWORK, None)
             return
 
-        # Secure map ports to value
-        new_ports = {}
-        for container_port, host_port in value.items():
-            if container_port in self.data.get(ATTR_PORTS, {}):
-                new_ports[container_port] = host_port
-
+        new_ports = {
+            container_port: host_port
+            for container_port, host_port in value.items()
+            if container_port in self.data.get(ATTR_PORTS, {})
+        }
         self.persist[ATTR_NETWORK] = new_ports
 
     @property
@@ -348,9 +345,7 @@ class Addon(AddonModel):
             return None
 
         port = self.data[ATTR_INGRESS_PORT]
-        if port == 0:
-            return self.sys_ingress.get_dynamic_port(self.slug)
-        return port
+        return self.sys_ingress.get_dynamic_port(self.slug) if port == 0 else port
 
     @property
     def ingress_panel(self) -> Optional[bool]:
@@ -469,11 +464,7 @@ class Addon(AddonModel):
         s_suffix = application.group("s_suffix") or ""
 
         # search host port for this docker port
-        if self.host_network:
-            port = self.ports.get(f"{t_port}/tcp", t_port)
-        else:
-            port = t_port
-
+        port = self.ports.get(f"{t_port}/tcp", t_port) if self.host_network else t_port
         # TCP monitoring
         if s_prefix == "tcp":
             return await self.sys_run_in_executor(check_port, self.ip_address, port)
@@ -485,16 +476,13 @@ class Addon(AddonModel):
             proto = s_prefix
 
         # Make HTTP request
-        try:
+        with suppress(asyncio.TimeoutError, aiohttp.ClientError):
             url = f"{proto}://{self.ip_address}:{port}{s_suffix}"
             async with self.sys_websession.get(
                 url, timeout=WATCHDOG_TIMEOUT, ssl=False
             ) as req:
                 if req.status < 300:
                     return True
-        except (asyncio.TimeoutError, aiohttp.ClientError):
-            pass
-
         return False
 
     async def write_options(self) -> None:

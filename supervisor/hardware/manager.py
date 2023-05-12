@@ -68,11 +68,11 @@ class HardwareManager(CoreSysAttributes):
 
     def filter_devices(self, subsystem: Optional[UdevSubsystem] = None) -> list[Device]:
         """Return a filtered list."""
-        devices = set()
-        for device in self.devices:
-            if subsystem and device.subsystem != subsystem:
-                continue
-            devices.add(device)
+        devices = {
+            device
+            for device in self.devices
+            if not subsystem or device.subsystem == subsystem
+        }
         return list(devices)
 
     def update_device(self, device: Device) -> None:

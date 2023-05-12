@@ -60,9 +60,7 @@ def version_tag(
     """Validate main version handling."""
     if value is None:
         return None
-    if isinstance(value, AwesomeVersion):
-        return value
-    return AwesomeVersion(value)
+    return value if isinstance(value, AwesomeVersion) else AwesomeVersion(value)
 
 
 def dns_url(url: str) -> str:

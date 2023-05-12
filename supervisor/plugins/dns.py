@@ -320,14 +320,10 @@ class PluginDns(PluginBase):
 
         hostnames: list[str] = []
         for name in names:
-            hostnames.append(name)
-            hostnames.append(f"{name}.{DNS_SUFFIX}")
-
+            hostnames.extend((name, f"{name}.{DNS_SUFFIX}"))
         # Generate host entry
         entry = HostEntry(ipv4, hostnames)
-        old = self._search_host(hostnames)
-
-        if old:
+        if old := self._search_host(hostnames):
             _LOGGER.debug("Update Host entry %s -> %s", ipv4, hostnames)
             self._hosts.remove(old)
         else:

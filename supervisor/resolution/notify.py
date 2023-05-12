@@ -40,18 +40,21 @@ class ResolutionNotify(CoreSysAttributes):
                         "notification_id": "supervisor_issue_free_space",
                     }
                 )
-            if issue.type == IssueType.SECURITY and issue.context == ContextType.CORE:
-                if (
+            if (
+                issue.type == IssueType.SECURITY
+                and issue.context == ContextType.CORE
+                and (
                     issue.reference
                     == SecurityReference.CUSTOM_COMPONENTS_BELOW_2021_1_5
-                ):
-                    messages.append(
-                        {
-                            "title": "Security notification",
-                            "message": "The Supervisor detected that this version of Home Assistant could be insecure in combination with custom integrations. [Update as soon as possible.](/hassio/dashboard)\n\nFor more information see the [Security alert](https://www.home-assistant.io/latest-security-alert).",
-                            "notification_id": "supervisor_update_home_assistant_2021_1_5",
-                        }
-                    )
+                )
+            ):
+                messages.append(
+                    {
+                        "title": "Security notification",
+                        "message": "The Supervisor detected that this version of Home Assistant could be insecure in combination with custom integrations. [Update as soon as possible.](/hassio/dashboard)\n\nFor more information see the [Security alert](https://www.home-assistant.io/latest-security-alert).",
+                        "notification_id": "supervisor_update_home_assistant_2021_1_5",
+                    }
+                )
             if issue.type == IssueType.PWNED and issue.context == ContextType.ADDON:
                 messages.append(
                     {

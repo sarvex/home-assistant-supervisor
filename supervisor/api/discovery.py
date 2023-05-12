@@ -28,28 +28,25 @@ class APIDiscovery(CoreSysAttributes):
 
     def _extract_message(self, request):
         """Extract discovery message from URL."""
-        message = self.sys_discovery.get(request.match_info.get("uuid"))
-        if not message:
+        if message := self.sys_discovery.get(request.match_info.get("uuid")):
+            return message
+        else:
             raise APIError("Discovery message not found")
-        return message
 
     @api_process
     @require_home_assistant
     async def list(self, request):
         """Show register services."""
 
-        # Get available discovery
-        discovery = []
-        for message in self.sys_discovery.list_messages:
-            discovery.append(
-                {
-                    ATTR_ADDON: message.addon,
-                    ATTR_SERVICE: message.service,
-                    ATTR_UUID: message.uuid,
-                    ATTR_CONFIG: message.config,
-                }
-            )
-
+        discovery = [
+            {
+                ATTR_ADDON: message.addon,
+                ATTR_SERVICE: message.service,
+                ATTR_UUID: message.uuid,
+                ATTR_CONFIG: message.config,
+            }
+            for message in self.sys_discovery.list_messages
+        ]
         # Get available services/add-ons
         services = {}
         for addon in self.sys_addons.all:

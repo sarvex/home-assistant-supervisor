@@ -14,11 +14,11 @@ RE_URL: re.Pattern = re.compile(r"(\w+:\/\/)(.*\.\w+)(.*)")
 
 def sanitize_url(url: str) -> str:
     """Return a sanitized url."""
-    if not re.match(RE_URL, url):
-        # Not a URL, just return it back
-        return url
-
-    return re.sub(RE_URL, r"\1example.com\3", url)
+    return (
+        re.sub(RE_URL, r"\1example.com\3", url)
+        if re.match(RE_URL, url)
+        else url
+    )
 
 
 def filter_data(coresys: CoreSys, event: dict, hint: dict) -> dict:

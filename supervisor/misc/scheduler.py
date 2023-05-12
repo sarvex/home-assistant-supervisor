@@ -80,11 +80,7 @@ class Scheduler(CoreSysAttributes):
             tomorrow = datetime.combine(date.today() + timedelta(days=1), task.interval)
 
             # Check if we run it today or next day
-            if today > datetime.today():
-                calc = today
-            else:
-                calc = tomorrow
-
+            calc = today if today > datetime.now() else tomorrow
             task.next = self.sys_loop.call_at(calc.timestamp(), self._run_task, task)
         else:
             _LOGGER.critical(

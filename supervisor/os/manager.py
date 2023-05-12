@@ -81,15 +81,10 @@ class OSManager(CoreSysAttributes):
             update_board = "generic-x86-64"
 
         # The OS name used to be hassos before renaming to haos...
-        if version < 6.0:
-            update_os_name = "hassos"
-        else:
-            update_os_name = "haos"
-
-        url = raw_url.format(
+        update_os_name = "hassos" if version < 6.0 else "haos"
+        return raw_url.format(
             version=str(version), board=update_board, os_name=update_os_name
         )
-        return url
 
     async def _download_raucb(self, url: str, raucb: Path) -> None:
         """Download rauc bundle (OTA) from URL."""

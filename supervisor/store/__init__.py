@@ -57,8 +57,7 @@ class StoreManager(CoreSysAttributes):
 
     async def reload(self) -> None:
         """Update add-ons from repository and reload list."""
-        tasks = [repository.update() for repository in self.all]
-        if tasks:
+        if tasks := [repository.update() for repository in self.all]:
             await asyncio.wait(tasks)
 
         # read data from repositories

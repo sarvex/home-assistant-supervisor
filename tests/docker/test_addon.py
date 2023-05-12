@@ -48,8 +48,7 @@ def get_docker_addon(
     addonsdata_system.return_value = {slug: config}
 
     addon = Addon(coresys, config.get("slug"))
-    docker_addon = DockerAddon(coresys, addon)
-    return docker_addon
+    return DockerAddon(coresys, addon)
 
 
 def test_base_volumes_included(coresys: CoreSys, addonsdata_system: dict[str, Data]):

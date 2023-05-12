@@ -104,16 +104,14 @@ class APIHost(CoreSysAttributes):
     @api_process
     async def services(self, request):
         """Return list of available services."""
-        services = []
-        for unit in self.sys_host.services:
-            services.append(
-                {
-                    ATTR_NAME: unit.name,
-                    ATTR_DESCRIPTON: unit.description,
-                    ATTR_STATE: unit.state,
-                }
-            )
-
+        services = [
+            {
+                ATTR_NAME: unit.name,
+                ATTR_DESCRIPTON: unit.description,
+                ATTR_STATE: unit.state,
+            }
+            for unit in self.sys_host.services
+        ]
         return {ATTR_SERVICES: services}
 
     @api_process

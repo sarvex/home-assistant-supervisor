@@ -56,10 +56,9 @@ class Discovery(CoreSysAttributes, FileConfiguration):
 
     def save(self) -> None:
         """Write discovery message into data file."""
-        messages: list[dict[str, Any]] = []
-        for message in self.list_messages:
-            messages.append(attr.asdict(message))
-
+        messages: list[dict[str, Any]] = [
+            attr.asdict(message) for message in self.list_messages
+        ]
         self._data[ATTR_DISCOVERY].clear()
         self._data[ATTR_DISCOVERY].extend(messages)
         self.save_data()

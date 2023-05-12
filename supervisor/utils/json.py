@@ -24,10 +24,7 @@ class JSONEncoder(json.JSONEncoder):
             return o.isoformat()
         if isinstance(o, set):
             return list(o)
-        if isinstance(o, Path):
-            return o.as_posix()
-
-        return super().default(o)
+        return o.as_posix() if isinstance(o, Path) else super().default(o)
 
 
 def write_json_file(jsonfile: Path, data: Any) -> None:
@@ -46,7 +43,7 @@ def read_json_file(jsonfile: Path) -> Any:
     """Read a JSON file and return a dict."""
     try:
         return json.loads(jsonfile.read_text())
-    except (OSError, ValueError, TypeError, UnicodeDecodeError) as err:
+    except (OSError, ValueError, TypeError) as err:
         raise JsonFileError(
             f"Can't read json from {jsonfile!s}: {err!s}", _LOGGER.error
         ) from err

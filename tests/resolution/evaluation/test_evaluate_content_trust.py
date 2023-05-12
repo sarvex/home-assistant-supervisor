@@ -26,7 +26,7 @@ async def test_did_run(coresys: CoreSys):
     should_run = job_conditions.states
     should_not_run = [state for state in CoreState if state not in should_run]
     assert len(should_run) != 0
-    assert len(should_not_run) != 0
+    assert should_not_run
 
     with patch(
         "supervisor.resolution.evaluations.content_trust.EvaluateContentTrust.evaluate",

@@ -110,7 +110,4 @@ class HwPolicy(CoreSysAttributes):
 
     def allowed_for_access(self, device: Device) -> bool:
         """Return True if allow to access to this device."""
-        if self.sys_hardware.disk.is_used_by_system(device):
-            return False
-
-        return True
+        return not self.sys_hardware.disk.is_used_by_system(device)
